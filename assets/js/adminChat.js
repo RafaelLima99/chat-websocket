@@ -165,15 +165,24 @@ function inserirMensagemHtml(remetente, dataEhora, mensagem){
 }
 
 function inserirCirculoChatHtml(chats){
-    
     chats.map((chat)=>{
-        
-        const elemento = `<div class="circulo" onclick="abrirChat(${chat.id})"></div>`
+        let corRandom = getRandomColor();
+        const elemento = `<div class="circulo" style="background-color: ${corRandom}" onclick="abrirChat(${chat.id})"></div>`
         document.getElementById("box-chat-circulo").innerHTML += elemento
     })
 }
 
 function insereCirculo(id){
-    const elemento = `<div class="circulo" onclick="abrirChat(${id})"></div>`
-        document.getElementById("box-chat-circulo").innerHTML += elemento
+    let corRandom = getRandomColor();
+    const elemento = `<div class="circulo" style="background-color: ${corRandom}" onclick="abrirChat(${id})"></div>`
+    document.getElementById("box-chat-circulo").innerHTML += elemento
+}
+
+function getRandomColor() {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
