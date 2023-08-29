@@ -47,4 +47,10 @@ class Chats
         $this->bd->query($sql);
         return $this->bd->result();
     }
+
+    public function atualizaChatProgress($chatId){
+        $this->id = $chatId;
+        $sql = "UPDATE chats SET status = 'in progress' WHERE id = $this->id";
+        $this->bd->query($sql);
+    }
 }

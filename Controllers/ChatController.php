@@ -12,19 +12,23 @@ Class ChatController
     public function chatAdmin()
     {
 
-        $loader = new FilesystemLoader('../Resources/Views');
-        $twig   = new Environment($loader);
+        // $loader = new FilesystemLoader('../Resources/Views');
+        // $twig   = new Environment($loader);
 
-        echo $twig->render('chatAdmin.twig');
+        // echo $twig->render('chatAdmin.twig');
+
+        require('../Resources/Views/chatAdmin.html');
 
     }
     public function chatCliente()
     {
 
-        $loader = new FilesystemLoader('../Resources/Views');
-        $twig   = new Environment($loader);
+        // $loader = new FilesystemLoader('../Resources/Views');
+        // $twig   = new Environment($loader);
 
-        echo $twig->render('chatCliente.twig');
+        // echo $twig->render('chatCliente.twig');
+
+        require('../Resources/Views/chatCliente.html');
 
     }
 
@@ -169,11 +173,13 @@ Class ChatController
 
     }
 
-    public function entrou()
+    public function atualizaChatProgress($chatId)
     {
-        return "entrou no metodo";
+        $chats = new Chats();
+        $chats->atualizaChatProgress($chatId);
     }
 
+  
 
 }
 

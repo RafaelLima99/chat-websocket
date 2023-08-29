@@ -19,7 +19,12 @@ class Methods implements MessageComponentInterface {
 
         echo "New connection! ({$conn->resourceId})\n";
 
-        $conn->send($conn->resourceId);
+        $resourceId = $conn->resourceId;
+
+        $dados = ['tipoMensagem' => 'resourceId', 'resourceId' => $resourceId];
+        $dados = json_encode($dados);
+        
+        $conn->send($dados);
 
         // $chatControlller = new ChatController();
         // $chatControlller->atualizaUserResourceId($conn->resourceId);
@@ -29,16 +34,100 @@ class Methods implements MessageComponentInterface {
 
     public function onMessage(ConnectionInterface $from, $msg) {
         $numRecv = count($this->clients) - 1;
-        echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
-            , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
+       // echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
+            //, $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
 
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
+
+        $objMsg = json_decode($msg);
+
+
+        if($objMsg->tipoMensagem == 'novo chat'){
+            
+            foreach ($this->clients as $client) {
+                 if ($client->tipo == 'admin') {
+
+                    $client->send($msg);
+                }
             }
+        }
+
+        if($objMsg->tipoMensagem == 'chat progress'){
+            foreach ($this->clients as $client ) {
+                 if ($client->tipo == 'admin'  && $from !== $client) {
+
+                    $client->send($msg);
+                }
+            }
+        }
+
+
+        //echo $objMsg->tipoMensagem;
+        if($objMsg->resourceIdAdminLogado){
+            echo "admin logado 2";
+            foreach ($this->clients as $client) {
+                if($client->resourceId == $objMsg->resourceIdAdminLogado){
+                    
+                    $client->tipo = 'admin';
+
+                }
+            }
+
             
         }
+
+        if($objMsg->tipoMensagem == 'nova mensagem'){
+
+            if($objMsg->resourceIdCliente){
+
+                echo "entrou no if ";
+
+                $resourceIdCliente = $objMsg->resourceIdCliente;
+
+
+                foreach ($this->clients as $client) {
+                    // if ($from !== $client) {
+                    //     // The sender is not the receiver, send to each client connected
+                    //     $client->send($msg);
+                    // }
+                    echo "entrou no for ";
+                    if($client->resourceId == $resourceIdCliente){
+                        echo "entrou no if de enviar ";
+                        $client->send($msg);
+                    }
+                    
+                }
+
+            }
+            
+            
+            if($objMsg->resourceIdAdmin){
+
+               $resourceIdAdmin = $objMsg->resourceIdAdmin;
+
+                foreach ($this->clients as $client) {
+                    if ($client->resourceId == $resourceIdAdmin) {
+                        // The sender is not the receiver, send to each client connected
+                        $client->send($msg);
+                    }
+                    
+                }
+            }
+
+
+            if (!$objMsg->resourceIdAdmin && !$objMsg->resourceIdAdminResposta) {
+
+                foreach ($this->clients as $client) {
+                    if ($client->tipo == 'admin') {
+                        // The sender is not the receiver, send to each client connected
+                        $client->send($msg);
+                    }
+                    
+                }
+            }
+
+            
+        }
+
 
         var_dump($msg);
     }

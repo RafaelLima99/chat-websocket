@@ -1,9 +1,11 @@
 let conexaoWebSocket = null
 let resourceId = null
+let resourceIdAdmin = null
 
 if (localStorage.getItem("chatId")) {
     verificaChatOpen()
 }
+
 
 function abrirChat(){
 
@@ -26,7 +28,7 @@ function abrirChat(){
     });
 
 
-    conexaoWebSocket = new WebSocket('ws://localhost:8080');
+    conexaoWebSocket = new WebSocket('wss://fb082cdb03290f.lhr.life:8080');
 
     conexaoWebSocket.addEventListener('open', (event) => {
     
@@ -35,16 +37,29 @@ function abrirChat(){
         conexaoWebSocket.addEventListener('message', (event) => {
             console.log(event.data)
             console.log("mensagem recebida")
-            resourceId = event.data
+            
 
-           
+            let mensagemWebSocket = JSON.parse(event.data)
+
+            if(mensagemWebSocket.tipoMensagem == 'nova mensagem'){
+                const dataAtual              = new Date();
+                const dataHoraAtualFormatada = formatarDataHora(dataAtual);
+                resourceIdAdmin              = mensagemWebSocket.resourceIdAdminResposta
+
+                inserirMensagemHtml('Admin', dataHoraAtualFormatada, mensagemWebSocket.mensagem)
+            }
+
+            if(mensagemWebSocket.tipoMensagem == 'resourceId'){
+                console.log('entrou no recorce')
+                resourceId = mensagemWebSocket.resourceId
+            }
         })
 
         const chatId = localStorage.getItem("chatId");
         const tipoMensagem = 'novo chat'
 
         var dataWebSocket = { tipoMensagem: tipoMensagem, chatId: chatId}
-        
+
         conexaoWebSocket.send(JSON.stringify(dataWebSocket))
 
 
@@ -92,7 +107,9 @@ function enviarMensagem()
 
     
     const data          = {chatId: chatId , mensagem: mensagemConteudo}
-    const dataWebSocket = {tipoMensagem: tipoMensagem, resourceId: resourceId, mensagem: mensagemConteudo}
+    const dataWebSocket = {tipoMensagem: tipoMensagem, resourceId: resourceId, resourceIdAdmin: resourceIdAdmin, chatId:chatId, mensagem: mensagemConteudo}
+
+    console.log(JSON.stringify(dataWebSocket))
 
     conexaoWebSocket.send(JSON.stringify(dataWebSocket))
     
@@ -168,6 +185,8 @@ async function verificaChatOpen()
         throw error;
     }
 
+    testeRecarregar()
+
 }
 
 function exibirChat(){
@@ -217,6 +236,33 @@ function inserirMensagemHtml(remetente, dataEhora, mensagem){
     }
 
     document.getElementById("chat-messages").innerHTML += elemento
+}
+
+
+
+function testeRecarregar(){
+
+    conexaoWebSocket = new WebSocket('wss://fb082cdb03290f.lhr.life:8080');
+    
+    conexaoWebSocket.addEventListener('message', (event) => {
+        console.log(event.data)
+        console.log("mensagem recebida")
+        
+
+        let mensagemWebSocket = JSON.parse(event.data)
+
+        if(mensagemWebSocket.tipoMensagem == 'nova mensagem'){
+            const dataAtual              = new Date();
+            const dataHoraAtualFormatada = formatarDataHora(dataAtual);
+
+            inserirMensagemHtml('Admin', dataHoraAtualFormatada, mensagemWebSocket.mensagem)
+        }
+
+        if(mensagemWebSocket.tipoMensagem == 'resourceId'){
+            console.log('entrou no recorce')
+            resourceId = mensagemWebSocket.resourceId
+        }
+    })
 }
 
 
