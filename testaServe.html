@@ -1,0 +1,55 @@
+<script>
+
+
+// var conn = new WebSocket('ws://localhost:8080');
+
+// conn.onopen = function(e) {
+//     console.log("Connection established!");
+//     conn.send('dala code');
+
+    
+// conn.onmessage = function(e) {
+//     console.log(e.data);
+//     console.log("entrou on mensage")
+// };
+// };
+
+
+
+
+
+//conn.onopen = () => conn.send("ze da manga");
+
+
+
+const webSocket = new WebSocket('ws://localhost:8080');
+
+webSocket.addEventListener('open', (event) => {
+    
+    console.log('conexão estabelecida pelo codigo do alex')
+
+    webSocket.send("teste")
+    
+})
+
+
+
+webSocket.addEventListener('message', (event) => {
+    console.log(event.data)
+
+    console.log("mensagem recebida")
+})
+
+
+
+webSocket.addEventListener('error', (event) => {
+    console.log(event)
+})
+
+
+
+
+
+
+
+</script>

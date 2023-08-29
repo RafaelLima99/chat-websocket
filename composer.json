@@ -1,0 +1,14 @@
+{
+
+    "autoload": {
+        "psr-4": {
+            "WebSocket\\": "actions/websocket"
+        }
+    },
+
+    "require": {
+        "vlucas/phpdotenv": "^5.5",
+        "twig/twig": "^2.0",
+        "cboden/ratchet": "^0.4.4"
+    }
+}
