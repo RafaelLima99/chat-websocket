@@ -4,6 +4,7 @@
 //require_once 'vendor/autoload.php';
 require_once (dirname(__DIR__, 1) . "/Models/ChatMessages.php");
 require_once (dirname(__DIR__, 1) . "/Models/Chats.php");
+require_once (dirname(__DIR__, 1) . "/Models/User.php");
 
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -119,8 +120,10 @@ Class ChatController
 
     public function chatsAbertos()
     {
+        $idAdminLogado = $this->clienteLogado();
+
         $chats = new Chats();
-        return $chats->chatsAbertos();
+        return $chats->chatsAbertos($idAdminLogado);
     }
 
 
@@ -175,8 +178,18 @@ Class ChatController
 
     public function atualizaChatProgress($chatId)
     {
+        $idAdminLogado = $this->clienteLogado();
         $chats = new Chats();
-        $chats->atualizaChatProgress($chatId);
+        $chats->atualizaChatProgress($chatId, $idAdminLogado);
+    }
+
+    public function resourceIdUser($userId){
+
+        $user = new User();
+        
+        $resourceId = $user->getResourceIdUser($userId);
+
+        return $resourceId[0]['resourceId'];
     }
 
   

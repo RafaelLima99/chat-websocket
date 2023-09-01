@@ -8,6 +8,7 @@ class Chats
     private $userId;
     private $guid;
     private $status;
+    private $adminId;
 
     public function __construct()
     {
@@ -24,9 +25,11 @@ class Chats
         return $this->bd->lastId();
     }
 
-    public function chatsAbertos()
+    public function chatsAbertos($idAdminLogado)
     {
-        $sql = "SELECT * FROM `chats` WHERE status = 'open'";
+        $this->adminId = $idAdminLogado;
+
+        $sql = "SELECT * FROM `chats` WHERE status = 'open' OR admin_id = $this->adminId AND status = 'in progress'";
         $this->bd->query($sql);
 
         return $this->bd->result();
@@ -48,9 +51,11 @@ class Chats
         return $this->bd->result();
     }
 
-    public function atualizaChatProgress($chatId){
+    public function atualizaChatProgress($chatId, $idAdminLogado){
+
         $this->id = $chatId;
-        $sql = "UPDATE chats SET status = 'in progress' WHERE id = $this->id";
+        $this->adminId = $idAdminLogado;
+        $sql = "UPDATE chats SET status = 'in progress', admin_id = $this->adminId WHERE id = $this->id";
         $this->bd->query($sql);
     }
 }

@@ -1,6 +1,7 @@
 let conexaoWebSocket = null
 let resourceId = null
 let resourceIdAdmin = null
+let idAdmin = null
 
 if (localStorage.getItem("chatId")) {
     verificaChatOpen()
@@ -28,11 +29,15 @@ function abrirChat(){
     });
 
 
-    conexaoWebSocket = new WebSocket('wss://fb082cdb03290f.lhr.life:8080');
+    conexaoWebSocket = new WebSocket('wss://lsf99mtr78.execute-api.us-east-1.amazonaws.com/production');
 
     conexaoWebSocket.addEventListener('open', (event) => {
     
         console.log('conexão estabelecida pelo codigo do alex')
+
+
+        conexaoWebSocket.send(JSON.stringify({
+            action: 'receiveConnectionId'}))
 
         conexaoWebSocket.addEventListener('message', (event) => {
             console.log(event.data)
@@ -42,6 +47,7 @@ function abrirChat(){
             let mensagemWebSocket = JSON.parse(event.data)
 
             if(mensagemWebSocket.tipoMensagem == 'nova mensagem'){
+                idAdmin = mensagemWebSocket.idAdmin
                 const dataAtual              = new Date();
                 const dataHoraAtualFormatada = formatarDataHora(dataAtual);
                 resourceIdAdmin              = mensagemWebSocket.resourceIdAdminResposta
@@ -52,13 +58,42 @@ function abrirChat(){
             if(mensagemWebSocket.tipoMensagem == 'resourceId'){
                 console.log('entrou no recorce')
                 resourceId = mensagemWebSocket.resourceId
+                console.log("==================")
+                console.log(resourceId)
+                atualizaUserResourceId(resourceId)
+
             }
         })
 
+
+        fetch("/api/user-logado.php", {
+            method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                localStorage.setItem("meuId", data);
+        
+            })
+            .catch(error => {
+                alert('Erro na requisição:', error);
+                console.error('Erro na requisição:', error);
+            });
+
+
+        
+
         const chatId = localStorage.getItem("chatId");
         const tipoMensagem = 'novo chat'
+        const meuId = localStorage.getItem("meuId");
 
-        var dataWebSocket = { tipoMensagem: tipoMensagem, chatId: chatId}
+        var dataWebSocket = { 
+            action: 'message',
+
+            body: {
+                tipoMensagem: tipoMensagem, chatId: chatId, idCliente: meuId
+            }
+        }
 
         conexaoWebSocket.send(JSON.stringify(dataWebSocket))
 
@@ -99,17 +134,41 @@ function fecharChat() {
     });
 }
 
-function enviarMensagem()
+async function enviarMensagem()
 {
+
+    if(idAdmin){
+       resourceIdAdmin = await testeL(idAdmin)
+    }
+
+
     const chatId           = localStorage.getItem("chatId");
     const mensagemConteudo = document.getElementById("inpt-mensagem").value
     const tipoMensagem     = 'nova mensagem';
+    const meuId            = localStorage.getItem("meuId");
 
+   
     
     const data          = {chatId: chatId , mensagem: mensagemConteudo}
-    const dataWebSocket = {tipoMensagem: tipoMensagem, resourceId: resourceId, resourceIdAdmin: resourceIdAdmin, chatId:chatId, mensagem: mensagemConteudo}
+
+    const dataWebSocket = {
+        action: 'message',
+        body: { tipoMensagem: tipoMensagem, resourceId: resourceId, resourceIdAdmin: resourceIdAdmin, 
+                chatId:chatId, mensagem: mensagemConteudo, clienteId: meuId, resourceIdAdminResposta: null 
+            }
+    }
 
     console.log(JSON.stringify(dataWebSocket))
+        
+
+    
+
+    // let novoDataWebSocket = {
+    //     action: 'receiveConnectionId',
+    //     body: dataWebSocket
+    // }
+
+    
 
     conexaoWebSocket.send(JSON.stringify(dataWebSocket))
     
@@ -242,7 +301,7 @@ function inserirMensagemHtml(remetente, dataEhora, mensagem){
 
 function testeRecarregar(){
 
-    conexaoWebSocket = new WebSocket('wss://fb082cdb03290f.lhr.life:8080');
+    conexaoWebSocket = new WebSocket('wss://lsf99mtr78.execute-api.us-east-1.amazonaws.com/production');
     
     conexaoWebSocket.addEventListener('message', (event) => {
         console.log(event.data)
@@ -264,6 +323,92 @@ function testeRecarregar(){
         }
     })
 }
+
+
+function atualizaUserResourceId(resourceId){
+    console.log("acessou")
+
+    let data = {resourceId: resourceId}
+
+    console.log(data)
+
+    fetch("/api/atualiza-user-resource-id.php", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+        })
+        .then(response => response.text())
+        .then(data => {
+            
+            console.log(data)
+            
+        })
+        .catch(error => {
+            alert('Erro na requisição:', error)
+            console.error('Erro na requisição:', error)
+        });
+}
+
+
+
+function getResourceId(id){
+
+    let data = {id: id}
+
+    fetch("/api/resource-id.php", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("resource ID do usuario 2")
+            console.log(data)
+            console.log("aaaa")
+        })
+        .catch(error => {
+            alert('Erro na requisição:', error);
+            console.error('Erro na requisição:', error);
+    });
+
+}
+
+
+async function testeL(id){
+    
+    let data = {id: id}
+
+    try {
+        const response = await fetch('/api/resource-id.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+        throw new Error('Erro na requisição')
+        }
+
+        const responseData = await response.json()
+        return responseData.resourceId;
+
+    } catch (error) {
+        console.error('Erro:', error)
+        throw error;
+    }
+}
+
+
+
+
+
+
 
 
 // async function chatMensagens(chatId) {

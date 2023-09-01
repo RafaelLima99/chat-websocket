@@ -19,8 +19,19 @@ class User {
         $this->codUser    = $codUser;
         $this->resourceId = $resourceId;
 
-        $sql = "UPDATE users SET resourceId = $this->resourceId WHERE codUser = $this->codUser";
+        $sql = "UPDATE users SET resourceId = '$this->resourceId' WHERE codUser = $this->codUser";
 
         $this->bd->query($sql);
+    }
+
+    public function getResourceIdUser($codUser)
+    {
+        $this->codUser = $codUser;
+
+        $sql = "SELECT resourceId FROM `users` WHERE `codUser` =  $this->codUser";
+        $this->bd->query($sql);
+
+        return $this->bd->result();
+
     }
 }
